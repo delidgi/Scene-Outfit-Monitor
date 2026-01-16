@@ -26,15 +26,9 @@ function getSettings() {
     return extension_settings[extensionName];
 }
 
-// ============================================
-// ПАРСИНГ AI СООБЩЕНИЙ
-// ============================================
-
 function parseAIMessage(text) {
     const s = getSettings();
     let updated = false;
-
-    // Парсинг локации
     const locationPatterns = [
         /(?:вошл[аи]|зашл[аи]|пришл[аи]|оказал[аи]сь|нахо[дж](?:и[тл]ся|усь)) (?:в|на) ([^.!?,]{3,30})/gi,
         /(?:в|на) ([а-яё]{4,20}(?:ой|ей|е|и|ой комнате|ем))/gi
@@ -54,7 +48,6 @@ function parseAIMessage(text) {
         }
     }
 
-    // Парсинг позиции {{user}}
     const userPosPatterns = [
         /(?:сел[аи]|лег[ли]а|встал[аи]|подошл[аи]|присел[аи]) (?:на|в|к|у) ([^.!?,]{3,30})/gi,
         /(?:на|в|у) ([а-яё]{4,20}(?:е|и|у|ом|ой))/gi
@@ -74,7 +67,6 @@ function parseAIMessage(text) {
         }
     }
 
-    // Парсинг позиции {{char}}
     const charName = window.name2 || '{{char}}';
     const charPosPattern = new RegExp(`${charName}.*?(?:сто[ия]т|сидит|лежит|подош[её]л) (?:у|на|в|к) ([^.!?,]{3,30})`, 'gi');
     const charMatch = text.match(charPosPattern);
@@ -88,7 +80,6 @@ function parseAIMessage(text) {
         }
     }
 
-    // Парсинг одежды - СНЯТИЕ
     if (/(сняла?|снял|разделась|разделся|скинула?)/gi.test(text)) {
         if (/куртк|пальто|плащ|пиджак/gi.test(text)) {
             s.outfit.outerWear = '';
@@ -127,7 +118,6 @@ function parseAIMessage(text) {
         }
     }
 
-    // Парсинг одежды - НАДЕВАНИЕ
     if (/(надел[аи]|одел[аи]|облачилась)/gi.test(text)) {
         const dressMatch = text.match(/(?:надел[аи]|одел[аи]) ([^.!?,]*(?:платье|сарафан|комбинезон)[^.!?,]*)/gi);
         if (dressMatch) {
@@ -139,7 +129,6 @@ function parseAIMessage(text) {
         }
     }
 
-    // Полное раздевание
     if (/(полностью разделась|полностью раздет[аы]й|голая|голый|нагая)/gi.test(text)) {
         s.outfit.outerWear = '';
         s.outfit.top = '';
@@ -151,7 +140,6 @@ function parseAIMessage(text) {
         console.log('[SceneOutfit] Полное раздевание');
     }
 
-    // Особенности
     if (/мокр[аы][яеи]* волос/gi.test(text)) {
         s.outfit.features = 'Мокрые волосы';
         updated = true;
@@ -166,10 +154,6 @@ function parseAIMessage(text) {
     return updated;
 }
 
-// ============================================
-// ПРОМПТ-ИНЖЕКТ
-// ============================================
-
 function updatePromptInjection() {
     const s = getSettings();
 
@@ -183,7 +167,6 @@ function updatePromptInjection() {
     prompt += `🧍 {{user}}: ${s.scene.userPosition}\n`;
     prompt += `🎭 {{char}}: ${s.scene.charPosition}\n\n`;
 
-    // Аутфит
     const outfit = [];
     if (s.outfit.outerWear) outfit.push(`Верхняя одежда: ${s.outfit.outerWear}`);
     if (s.outfit.dress) {
@@ -209,23 +192,16 @@ function updatePromptInjection() {
     console.log('[SceneOutfit] Промпт обновлён');
 }
 
-// ============================================
-// UI СИНХРОНИЗАЦИЯ
-// ============================================
-
 function syncUI() {
     const s = getSettings();
 
-    // Чекбокс
     const enabledCheck = $('#scene-outfit-enabled');
     if (enabledCheck.length) enabledCheck.prop('checked', s.isEnabled);
 
-    // Сцена
     $('#scene-location-display').text(s.scene.location);
     $('#scene-user-pos-display').text(s.scene.userPosition);
     $('#scene-char-pos-display').text(s.scene.charPosition);
 
-    // Аутфит
     $('#outfit-outer-display').text(s.outfit.outerWear || '—');
     $('#outfit-top-display').text(s.outfit.top || '—');
     $('#outfit-bottom-display').text(s.outfit.bottom || '—');
@@ -236,9 +212,6 @@ function syncUI() {
     $('#outfit-features-display').text(s.outfit.features || '—');
 }
 
-// ============================================
-// РЕДАКТИРОВАНИЕ ПОЛЕЙ
-// ============================================
 
 function makeEditable(selector, settingPath) {
     $(document).on('click', selector, function() {
@@ -259,10 +232,6 @@ function makeEditable(selector, settingPath) {
         }
     });
 }
-
-// ============================================
-// UI ГЕНЕРАЦИЯ
-// ============================================
 
 function setupUI() {
     try {
@@ -435,14 +404,12 @@ hr {
 
     $('#extensions_settings2').append(settingsHtml);
 
-    // События
     $('#scene-outfit-enabled').on('change', function() {
         getSettings().isEnabled = this.checked;
         saveSettingsDebounced();
         updatePromptInjection();
     });
 
-    // Делаем поля редактируемыми
     makeEditable('#scene-location-display', 'scene.location');
     makeEditable('#scene-user-pos-display', 'scene.userPosition');
     makeEditable('#scene-char-pos-display', 'scene.charPosition');
@@ -461,16 +428,11 @@ hr {
     }
 }
 
-// ============================================
-// ИНИЦИАЛИЗАЦИЯ
-// ============================================
-
 function loadSettings() {
     try {
         if (!extension_settings[extensionName]) {
             extension_settings[extensionName] = JSON.parse(JSON.stringify(defaultSettings));
         } else {
-            // Merge с defaults
             for (const key in defaultSettings) {
                 if (extension_settings[extensionName][key] === undefined) {
                     extension_settings[extensionName][key] = defaultSettings[key];
@@ -497,7 +459,6 @@ jQuery(async () => {
         updatePromptInjection();
         console.log('[SceneOutfit] Prompt OK');
 
-        // Слушаем сообщения от AI
         eventSource.on(event_types.MESSAGE_RECEIVED, () => {
             const chat = window.chat || [];
             if (chat.length === 0) return;
@@ -509,7 +470,6 @@ jQuery(async () => {
             parseAIMessage(lastMessage.mes);
         });
 
-        // Обновляем промпт при отправке сообщения
         eventSource.on(event_types.MESSAGE_SENT, () => {
             updatePromptInjection();
         });
