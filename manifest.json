@@ -1,8 +1,8 @@
 {
-    "display_name": "Scene & Outfit Monitor",
-    "name": "scene-outfit-monitor",
+    "display_name": "Outfit Monitor",
+    "name": "outfit-monitor",
     "version": "1.0.0",
-    "description": "Отслеживание локации, позиций персонажей и одежды {{user}}",
+    "description": "Отслеживание и изменение одежды {{user}}",
     "author": "Delidgi",
     "js": "index.js",
     "css": "",
