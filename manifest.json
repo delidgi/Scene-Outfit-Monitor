@@ -1,0 +1,8 @@
+{
+    "name": "Scene & Outfit Monitor",
+    "version": "1.0.0",
+    "display_name": "Scene & Outfit Monitor",
+    "description": "Отслеживание локации, позиций персонажей и одежды {{user}}",
+    "author": "Delidgi",
+    "requires": []
+}
